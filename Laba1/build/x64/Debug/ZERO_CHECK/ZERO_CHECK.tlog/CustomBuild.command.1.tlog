@@ -1,0 +1,10 @@
+^C:\USERS\TVYSH\CLIONPROJECTS\OS\LABA1\BUILD\CMAKEFILES\BB99F0C500F0611508083D496C65F387\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/tvysh/CLionProjects/OS/Laba1 -BC:/Users/tvysh/CLionProjects/OS/Laba1/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/tvysh/CLionProjects/OS/Laba1/build/Laba1.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

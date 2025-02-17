@@ -1,0 +1,5 @@
+C:/Users/tvysh/CLionProjects/OS/Laba1/build/CMakeFiles/creator.dir
+C:/Users/tvysh/CLionProjects/OS/Laba1/build/CMakeFiles/reporter.dir
+C:/Users/tvysh/CLionProjects/OS/Laba1/build/CMakeFiles/main.dir
+C:/Users/tvysh/CLionProjects/OS/Laba1/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/tvysh/CLionProjects/OS/Laba1/build/CMakeFiles/ZERO_CHECK.dir

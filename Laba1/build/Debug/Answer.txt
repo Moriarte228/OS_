@@ -1,0 +1,5 @@
+Report for file "aboba.bin"
+Employee Number, Name, Hours, Salary
+4, Yasha, 2, 13.32
+228, Mike, 785, 5228.1
+36, ABOBA, 0.2, 1.332

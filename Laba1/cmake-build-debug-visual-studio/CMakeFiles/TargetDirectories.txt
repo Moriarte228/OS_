@@ -1,0 +1,5 @@
+C:/Users/tvysh/CLionProjects/OS/Laba1/cmake-build-debug-visual-studio/CMakeFiles/creator.dir
+C:/Users/tvysh/CLionProjects/OS/Laba1/cmake-build-debug-visual-studio/CMakeFiles/reporter.dir
+C:/Users/tvysh/CLionProjects/OS/Laba1/cmake-build-debug-visual-studio/CMakeFiles/main.dir
+C:/Users/tvysh/CLionProjects/OS/Laba1/cmake-build-debug-visual-studio/CMakeFiles/edit_cache.dir
+C:/Users/tvysh/CLionProjects/OS/Laba1/cmake-build-debug-visual-studio/CMakeFiles/rebuild_cache.dir
