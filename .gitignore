@@ -1,0 +1,45 @@
+# General build artifacts
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/Makefile
+/*.make
+
+# Compiled binaries and libraries
+*.exe
+*.dll
+*.obj
+*.o
+*.so
+*.a
+*.lib
+*.pdb
+*.out
+*.elf
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+*.suo
+*.user
+*.filters
+*.directory
+
+# Logs, temp, and swap files
+*.log
+*.tmp
+*.swp
+*.bak
+
+# CMake and test-related files
+/tests/test_run
+/tests/*.o
+/tests/*.exe
+CMakeUserPresets.json
+compile_commands.json
+
+# Ignore dependency directories
+/vendor/
+/deps/
+/.cache/
