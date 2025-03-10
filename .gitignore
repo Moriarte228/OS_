@@ -43,3 +43,13 @@ compile_commands.json
 /vendor/
 /deps/
 /.cache/
+
+build/
+cmake-build-debug/
+CMakeCache.txt
+CMakeFiles/
+*.vcxproj
+*.tlog
+*.ilk
+*.recipe
+*.ninja
