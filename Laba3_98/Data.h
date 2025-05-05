@@ -6,6 +6,7 @@
 #include <iostream>
 #include <set>
 #include <sstream>
+#include <ctime>
 
 class Data {
 private:
@@ -27,9 +28,11 @@ public:
 
     void set(size_t index, int value) {
         EnterCriticalSection(&cs);
+        Sleep(5);
         if (index < size) {
             arr[index] = value;
         }
+        Sleep(5);
         LeaveCriticalSection(&cs);
     }
 

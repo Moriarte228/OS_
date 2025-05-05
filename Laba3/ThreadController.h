@@ -19,6 +19,7 @@ class ThreadController {
     static HANDLE threadIsTerminated[MAX_MARKERS];
     static std::set<int> workingThreads;
     static CRITICAL_SECTION coutSection;
+    static CRITICAL_SECTION randSection;
 public:
     static Data* data;
     ThreadController(unsigned int markers, Data* data);
@@ -32,6 +33,7 @@ public:
     static void ContinueThreads();
     static DWORD WINAPI MarkerThread(LPVOID lpParam);
     static void print(std::stringstream& ss);
+    static void ResetCPSignal();
 };
 
 

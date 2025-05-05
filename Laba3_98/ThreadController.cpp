@@ -11,9 +11,11 @@ HANDLE ThreadController::threadIsTerminated[ThreadController::MAX_MARKERS];
 std::set<int> ThreadController::workingThreads;
 Data* ThreadController::data = NULL;
 CRITICAL_SECTION  ThreadController:: coutSection;
+CRITICAL_SECTION  ThreadController:: randSection;
 
 ThreadController::ThreadController(unsigned int markers, Data* v_data) {
     InitializeCriticalSection(&coutSection);
+    InitializeCriticalSection(&randSection);
 
     if (markers > MAX_MARKERS) {
         throw ("Too many markers");
@@ -22,14 +24,14 @@ ThreadController::ThreadController(unsigned int markers, Data* v_data) {
     markerCount = markers;
 
     startEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-    for (int i = 1; i <= markerCount; ++i) {
+    for (int i = 0; i < markerCount; ++i) {
         cannotProceedEvents[i] = CreateEvent(NULL, TRUE, FALSE, NULL);
         continueEvents[i] = CreateEvent(NULL, FALSE, FALSE, NULL);
         threadIsTerminated[i] = CreateEvent(NULL, FALSE, FALSE, NULL);
         terminateEvents[i] = CreateEvent(NULL, FALSE, FALSE, NULL);
     }
 
-    for (int i = 1; i <= markerCount; ++i) {
+    for (int i = 0; i < markerCount; ++i) {
         workingThreads.insert(i);
         markerThreads[i] = CreateThread(
                 NULL,
@@ -56,6 +58,13 @@ ThreadController::~ThreadController() {
 
     }
     DeleteCriticalSection(&coutSection);
+    DeleteCriticalSection(&randSection);
+}
+
+void ThreadController::ResetCPSignal() {
+    for (auto id: workingThreads) {
+        ResetEvent(cannotProceedEvents[id]);
+    }
 }
 
 void ThreadController::StartEvent() {
@@ -65,10 +74,12 @@ void ThreadController::StartEvent() {
     ResetEvent(startEvent);
 }
 
+
 void ThreadController::CycleEvent() {
     std::stringstream lStream;
     while (!workingThreads.empty()) {
         WaitForMultipleObjects(markerCount, &cannotProceedEvents[0], TRUE, INFINITE);
+        ResetCPSignal();
 
         lStream << data->print();
         print(lStream);
@@ -79,7 +90,7 @@ void ThreadController::CycleEvent() {
             print(lStream);
 
             std::cin >> id;
-
+            id--;
             if (workingThreads.find(id) != workingThreads.end())
                 break;
 
@@ -90,7 +101,8 @@ void ThreadController::CycleEvent() {
         }
 
         FinishThread(id);
-
+        lStream << data->print();
+        print(lStream);
         ContinueThreads();
     }
 }
@@ -102,9 +114,6 @@ void ThreadController::FinishThread(unsigned int id) {
 }
 
 void ThreadController::ContinueThreads() {
-    for (auto id : workingThreads) {
-        ResetEvent(cannotProceedEvents[id]);
-    }
     for (auto id : workingThreads) {
         SetEvent(continueEvents[id]);
     }
@@ -123,22 +132,23 @@ DWORD ThreadController::MarkerThread(LPVOID lpParam) {
     int id = (int)(INT_PTR)lpParam;  // Получаем ID потока
     std::stringstream lStream;
     WaitForSingleObject(startEvent, INFINITE);
-    lStream << "Marker thread " << id << " started.\n";
+    int userId = id + 1;
+    lStream << "Marker thread " << userId << " started.\n";
     print(lStream);
     int totalMarked = 0;
-    srand(id);
     HANDLE myEvents[2] {continueEvents[id], terminateEvents[id]};
 
     while (true) {
+        EnterCriticalSection(&randSection);
+        srand(time(NULL) + userId * 760);
         size_t index = rand() % data->getSize();
+        LeaveCriticalSection(&randSection);
 
         if (data->get(index) == 0) {
-            Sleep(5);
-            data->set(index, id);
+            data->set(index, userId);
             totalMarked++;
-            Sleep(5);
         } else {
-            lStream << "Marker thread " << id << ": Unable to mark index " << index << ".\n"
+            lStream << "Marker thread " << userId << ": Unable to mark index " << index << ".\n"
             << "Total marked elements: " << totalMarked << ".\n"
             << "Element " << index << " is already marked.\n";
             print(lStream);
@@ -148,12 +158,12 @@ DWORD ThreadController::MarkerThread(LPVOID lpParam) {
             DWORD waitResult = WaitForMultipleObjects(2, myEvents, FALSE, INFINITE);
 
             if (waitResult == WAIT_OBJECT_0){
-                lStream << "Marker thread " << id << " continues work.\n";
+                lStream << "Marker thread " << userId << " continues work.\n";
                 print(lStream);
                 continue;
             }
             else if (waitResult == WAIT_OBJECT_0 + 1) {
-                lStream << "Marker thread " << id << " will terminate.\n";
+                lStream << "Marker thread " << userId << " will terminate.\n";
                 print(lStream);
                 break;
             }
@@ -165,11 +175,11 @@ DWORD ThreadController::MarkerThread(LPVOID lpParam) {
         }
     }
 
-    data->clearMarksBy(id);
+    data->clearMarksBy(userId);
 
     SetEvent(threadIsTerminated[id]);
     SetEvent(cannotProceedEvents[id]);
-    lStream << "Marker thread " << id << " finished.\n";
+    lStream << "Marker thread " << userId << " finished.\n";
     print(lStream);
     return 0;
 }
