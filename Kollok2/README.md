@@ -1,6 +1,2 @@
-# ABOBA
-## ABOBA
-### ABOBA
-#### ABOBA
-##### ABOBA
-###### ABOBA :emo
+# С++
+## Мощный синглтон
