@@ -6,6 +6,7 @@
 #define OS_FILECONTROLLER_H
 
 #include "Employee.h"
+#include "RecordLock.h"
 
 class FileController {
 private:
@@ -37,6 +38,13 @@ public:
     bool readRecordEmp(unsigned int id, Employee& result);
     bool printFile(std::string& result);
     bool modifyRecords(unsigned int id, Employee emp);
+    std::string toString() const {
+        std::string result;
+        for (unsigned int i = 0; i < numOfRecords; ++i) {
+            result += print(employee[i]);  // print — это твоя функция форматирования Employee в строку
+        }
+        return result;
+    }
 };
 
 

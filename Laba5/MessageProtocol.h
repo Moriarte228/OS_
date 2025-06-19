@@ -1,11 +1,9 @@
-//
-// Created by tvysh on 5/29/2025.
-//
-
 #ifndef OS_MESSAGEPROTOCOL_H
 #define OS_MESSAGEPROTOCOL_H
 
 #include "Employee.h"
+#include <string>
+#include <vector>
 
 constexpr const char* TYPE_READ = "R";
 constexpr const char* TYPE_MODIFY = "M";
@@ -18,19 +16,14 @@ constexpr const char* ERROR_UNKNOWN_COMMAND = "3";
 constexpr const char* ERROR_FAILED_MODIFY = "4";
 constexpr const char* ERROR_FAILED_READ = "5";
 
-const std::string CLIENT_SERVER_PIPE_BASE= R"(\\.\pipe\ClientServer_)";
-
-std::string getPipeName(unsigned int id) {
-    return CLIENT_SERVER_PIPE_BASE + std::to_string(id);
-}
+extern const std::string CLIENT_SERVER_PIPE_BASE;
+std::string getPipeName(unsigned int id);  // <--- только объявление
 
 #pragma pack(push, 1)
-
 struct ClientModifyMessage {
     double newHours;
     std::vector<char> newName;
 };
-
 #pragma pack(pop)
 
 #endif //OS_MESSAGEPROTOCOL_H

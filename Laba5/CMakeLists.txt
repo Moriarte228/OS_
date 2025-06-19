@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 
 project(EmployeeRecordSystem LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (WIN32)
@@ -23,6 +23,7 @@ set(SOURCES_COMMON
         RecordLock.cpp
         FileController.cpp
         ServerController.cpp
+        MessageProtocol.cpp
 )
 
 add_executable(Server
@@ -32,8 +33,9 @@ add_executable(Server
 )
 
 add_executable(Client
-        Client.cpp
+        Clients.cpp
         ${HEADERS}
+        ${SOURCES_COMMON}
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

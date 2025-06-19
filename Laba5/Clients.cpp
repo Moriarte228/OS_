@@ -19,11 +19,13 @@ bool readAll(HANDLE pipe, void* data, DWORD size) {
     return ReadFile(pipe, data, size, &read, NULL) && read == size;
 }
 
-int main() {
-    std::cout << "Enter client ID (used for pipe name): ";
-    unsigned int clientId;
-    std::cin >> clientId;
-    std::cin.ignore();
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        std::cerr << "Usage: Client.exe <client_id>\n";
+        return 1;
+    }
+
+    unsigned int clientId = std::stoi(argv[1]);
 
     std::string pipeName = getPipeName(clientId);
 
@@ -35,6 +37,13 @@ int main() {
 
     if (hPipe == INVALID_HANDLE_VALUE) {
         printError("Failed to connect to pipe");
+        return 1;
+    }
+
+    DWORD mode = PIPE_READMODE_MESSAGE;
+    if (!SetNamedPipeHandleState(hPipe, &mode, NULL, NULL)) {
+        printError("SetNamedPipeHandleState failed");
+        CloseHandle(hPipe);
         return 1;
     }
 
@@ -56,12 +65,13 @@ int main() {
                 printError("Failed to send exit command");
             }
             running = false;
-            break;
         }
         else if (op != 1 && op != 2) {
             std::cout << "Invalid operation.\n";
             continue;
         }
+
+        if (!running) break; // Если выбрали выход, не продолжаем
 
         // Send command
         char cmd = (op == 1) ? *TYPE_MODIFY : *TYPE_READ;
@@ -80,6 +90,7 @@ int main() {
             printError("Failed to send ID");
             break;
         }
+        Sleep(1000);
 
         // Read server response for ID validity
         char errorCode[2] = {0};
@@ -87,8 +98,9 @@ int main() {
             printError("Failed to read error code");
             break;
         }
-        if (errorCode[0] != *ERROR_OK) {
+        if (errorCode[0] != ERROR_OK[0]) {
             std::cout << "Server error: ID not found or invalid command\n";
+            Sleep(1000);
             continue;
         }
 
@@ -139,16 +151,8 @@ int main() {
         } else if (op == 2) {
             // READ flow
 
-            // Read server response if record exists and get employee record
+            // Read Employee record from server (errorCode уже проверен выше)
             Employee emp{};
-            if (!readAll(hPipe, errorCode, 1)) {
-                printError("Failed to read read response");
-                break;
-            }
-            if (errorCode[0] != *ERROR_OK) {
-                std::cout << "Failed to read record. Server error code: " << errorCode[0] << "\n";
-                continue;
-            }
             if (!readAll(hPipe, &emp, sizeof(Employee))) {
                 printError("Failed to read employee data");
                 break;
@@ -158,6 +162,14 @@ int main() {
 
             std::cout << "Press Enter to finish reading...";
             std::cin.get();
+        }
+
+        // Send confirmation to release lock
+        char confirmation = 'C';
+        if (!sendAll(hPipe, &confirmation, 1)) {
+            printError("Failed to send confirmation");
+            Sleep(1000);
+            break;
         }
     }
 

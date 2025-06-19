@@ -1,96 +1,79 @@
-//
-// Server.cpp
-//
 
 #include <iostream>
-#include <vector>
 #include <string>
-#include <windows.h>
-#include "Employee.h"
+#include <limits>
 #include "ServerController.h"
-#include "MessageProtocol.h"
-
-void printEmployeesFromFile(const char* filename) {
-    std::ifstream fin(filename, std::ios::binary);
-    if (!fin) {
-        std::cerr << "Failed to open file for reading.\n";
-        return;
-    }
-    std::cout << "\nContents of file '" << filename << "':\n";
-    Employee e;
-    while (fin.read(reinterpret_cast<char*>(&e), sizeof(Employee))) {
-        std::cout << print(e);
-    }
-    fin.close();
-}
 
 int main() {
+    std::cout << "Enter file name: ";
     std::string filename;
-    std::cout << "Enter filename for employee records: ";
     std::getline(std::cin, filename);
 
-    std::cout << "Enter number of employees to add: ";
-    int n;
-    std::cin >> n;
-    std::cin.ignore();
+    std::cout << "Enter number of employee records: ";
+    unsigned int numRecords;
+    std::cin >> numRecords;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    std::cout << "Enter number of client processes to run: ";
+    // Создаем сервер с вместимостью numRecords и столько клиентов, сколько захотим запустить
+    std::cout << "Enter number of client processes to launch: ";
     unsigned int numClients;
     std::cin >> numClients;
-    std::cin.ignore();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    // Инициализация контроллера
-    ServerController serverController(numClients, n, filename.c_str(), n);
+    ServerController serverController(numClients, numRecords, filename.c_str(), numRecords);
 
-    // Добавляем записи сотрудников
-    for (int i = 0; i < n; ++i) {
-        Employee e{};
-        std::cout << "Employee #" << (i + 1) << "\n";
+    // Ввод сотрудников
+    for (unsigned int i = 0; i < numRecords; ++i) {
+        unsigned int id;
+        std::string tempName;
+        double hours;
 
-        std::cout << "ID: ";
-        std::cin >> e.id;
-        std::cin.ignore();
+        std::cout << "Enter employee ID: ";
+        std::cin >> id;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        std::cout << "Name (max 9 chars): ";
-        std::string name;
-        std::getline(std::cin, name);
-        if (name.length() > 9)
-            name = name.substr(0, 9);
-        std::strncpy(e.name, name.c_str(), sizeof(e.name));
-        e.name[9] = '\0';
+        std::cout << "Enter employee name (max 9 characters): ";
+        std::getline(std::cin, tempName);
 
-        std::cout << "Hours: ";
-        std::cin >> e.hours;
-        std::cin.ignore();
+        if (tempName.length() > 9) {
+            std::cout << "Name too long, truncating to 9 characters.\n";
+            tempName = tempName.substr(0, 9);
+        }
 
-        if (!serverController.addRecord(e)) {
-            std::cerr << "Failed to add employee record.\n";
+        std::cout << "Enter hours worked: ";
+        std::cin >> hours;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+        Employee emp;
+        emp.id = id;
+        strncpy(emp.name, tempName.c_str(), 9);
+        emp.name[9] = '\0';
+        emp.hours = hours;
+
+        if (!serverController.addRecord(emp)) {
+            std::cerr << "Failed to add record for employee ID " << id << "\n";
         }
     }
 
-    // Выводим созданный файл
-    printEmployeesFromFile(filename.c_str());
+    std::cout << "\nInitial employee records:\n";
+    std::string fileContent;
+    std::cout << serverController.printFile();
 
-
-    // Инициализируем ServerController с нужными параметрами
-    // Передаём количество клиентов и количество записей
-    ServerController server(numClients, n, filename.c_str(), n);
-
-    // Создаём и запускаем клиентские потоки на сервере (обслуживание клиентов)
-    if (!server.createThreads()) {
+    std::cout << "\nStarting client threads...\n";
+    if (!serverController.createThreads()) {
         std::cerr << "Failed to create client threads.\n";
         return 1;
     }
 
-    std::cout << "Server is running and serving clients...\n";
+    std::cout << "Clients are running.\n";
 
-    // Ожидаем, пока все клиентские потоки завершатся
-    WaitForSingleObject(server.noActiveClientThreads, INFINITE);
+    serverController.waitForClientsThreadsEnd();
 
-    std::cout << "All client threads finished.\n";
+    std::cout << "\nFinal employee records after client modifications:\n";
 
-    // Выводим итоговое состояние файла после работы клиентов
-    printEmployeesFromFile(filename.c_str());
+   std::cout << serverController.printFile();
+
+    std::cout << "Server shutting down.\n";
 
     return 0;
 }

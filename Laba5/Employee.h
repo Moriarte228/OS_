@@ -1,6 +1,8 @@
 #ifndef EMPLOYEE_H
 #define EMPLOYEE_H
 
+#define NOMINMAX
+
 #include <iostream>
 #include <fstream>
 #include <string>

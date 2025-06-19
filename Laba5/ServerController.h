@@ -31,6 +31,12 @@ public:
     bool writerLogic(HANDLE hPipe, unsigned int recordId);
     bool checkIfValid(HANDLE hPipe, unsigned int& recordId);
     void clientThread(unsigned int id);
+    std::string printFile(){
+        return fileController.toString();
+    }
+    void waitForClientsThreadsEnd() {
+        WaitForSingleObject(noActiveClientThreads, INFINITE);
+    }
 };
 
 
